@@ -1,0 +1,160 @@
+.sys-page { padding-block: 56px 80px; }
+.sys-narrow { max-width: 820px; }
+.sys-heading { display: flex; justify-content: space-between; align-items: center; gap: 24px; margin-bottom: 32px; }
+.sys-heading h1 { font-size: clamp(2rem, 4vw, 3.25rem); }
+.sys-heading p { margin-top: 10px; color: var(--color-brown-600); max-width: 65ch; }
+.sys-muted { color: var(--color-brown-600); font-size: .9rem; }
+.sys-form { display: grid; gap: 20px; margin-top: 24px; }
+.sys-field { display: grid; gap: 7px; margin-block: 12px; font-size: .875rem; color: var(--color-brown-700); }
+.sys-field > span { font-weight: 600; }
+.sys-field select, .sys-field textarea { width: 100%; min-height: 47px; padding: 12px; background: var(--color-bg-cream); border: 1px solid var(--color-border-strong); border-radius: 4px; color: var(--color-brown-900); font: inherit; }
+.sys-field textarea { min-height: 100px; resize: vertical; }
+.sys-field select:focus-visible, .sys-field textarea:focus-visible { outline: 3px solid var(--color-accent-gold); outline-offset: 2px; }
+.sys-error { padding: 14px 18px; border-left: 3px solid var(--color-danger); background: var(--color-danger-light); color: var(--color-danger); margin-block: 15px; }
+.sys-success { padding: 14px; background: var(--color-success-light); color: var(--color-success); }
+.sys-empty { padding: 42px 26px; border: 1px dashed var(--color-border-strong); text-align: center; color: var(--color-brown-600); margin-block: 20px; }
+.sys-note { padding: 16px 0; color: var(--color-brown-600); font-size: .85rem; line-height: 1.7; }
+.sys-actions { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 14px; margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--color-border); }
+.sys-text-button { text-decoration: underline; text-underline-offset: 3px; }
+.sys-danger { color: var(--color-danger); }
+.sys-access { display: grid; grid-template-columns: .9fr 1.1fr; gap: 80px; max-width: 1100px; align-items: start; }
+.sys-access-story { padding-top: 48px; color: var(--color-brown-700); position: sticky; top: 140px; }
+.sys-access-story h1 { margin-block: 24px; }
+.sys-access-story p { margin-bottom: 20px; max-width: 42ch; }
+.sys-access-story a { text-decoration: underline; }
+.sys-form-switch { margin-top: 24px; font-size: .9rem; }
+.sys-form-switch a { font-weight: 600; text-decoration: underline; }
+.sys-access-form h2 { font-size: 2.25rem; }
+.sys-steps { display: flex; list-style: none; gap: 30px; padding-block: 0 28px; margin-bottom: 24px; border-bottom: 1px solid var(--color-border); }
+.sys-steps li { display: flex; align-items: center; gap: 10px; color: var(--color-brown-600); font-size: .85rem; }
+.sys-steps li > span { width: 30px; height: 30px; border: 1px solid var(--color-border-strong); border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; }
+.sys-steps li.is-current { color: var(--color-brown-900); font-weight: 600; }
+.sys-steps li.is-current > span { background: var(--color-brown-800); border-color: var(--color-brown-800); color: var(--color-accent-gold-light); }
+.sys-booking-grid { display: grid; grid-template-columns: minmax(0,1fr) 300px; gap: 32px; align-items: start; }
+.sys-booking-main h2 { margin-bottom: 10px; }
+.sys-booking-fields { border: 0; min-width: 0; }
+.sys-booking-main > .field { margin-top: 24px; max-width: 300px; }
+.sys-service-options { display: grid; gap: 12px; margin-block: 26px; }
+.sys-service-choice { padding: 20px; display: flex; gap: 15px; align-items: center; text-align: left; border: 1px solid var(--color-border); background: var(--color-bg-cream); border-radius: 5px; width: 100%; }
+.sys-service-choice.is-selected { background: #f0e6cd; border-color: #79603d; box-shadow: inset 3px 0 #79603d; }
+.sys-service-choice > span:nth-child(2) { flex: 1; }
+.sys-service-choice > strong { white-space: nowrap; }
+.sys-service-choice small { display: block; font-size: .8rem; color: var(--color-brown-600); margin-top: 4px; }
+.sys-service-check { color: var(--color-brown-700); }
+.sys-booking-aside { padding: 32px; border: 1px solid var(--color-border); background: #eee3d0; position: sticky; top: 120px; }
+.sys-aside-icon { display: inline-flex; margin-bottom: 20px; }
+.sys-booking-aside h2 { font-size: 2rem; }
+.sys-booking-aside ul { list-style: none; margin-block: 28px; }
+.sys-booking-aside li { display: flex; justify-content: space-between; gap: 12px; padding-block: 10px; font-size: .85rem; border-bottom: 1px solid var(--color-border); }
+.sys-booking-total { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.sys-booking-total strong { font-family: var(--font-heading); font-size: 2rem; }
+.sys-slots { display: grid; grid-template-columns: repeat(auto-fill,minmax(94px,1fr)); gap: 10px; margin-top: 24px; }
+.sys-slots button { border: 1px solid var(--color-border-strong); border-radius: 4px; padding: 12px 8px; font-size: 1rem; }
+.sys-slots small { display: block; font-size: .7rem; margin-top: 4px; }
+.sys-slots button.is-selected { background: var(--color-brown-800); color: var(--color-bg-cream); }
+.sys-summary { margin-block: 24px; }
+.sys-summary > div { display: grid; grid-template-columns: 130px 1fr; gap: 18px; padding-block: 14px; border-bottom: 1px solid var(--color-border); }
+.sys-summary dt { color: var(--color-brown-600); font-size: .85rem; }
+.sys-summary dd { font-weight: 500; }
+.sys-confirm-mark { background: var(--color-success-light); color: var(--color-success); width: 64px; height: 64px; display: grid; place-items: center; border-radius: 50%; margin-bottom: 20px; }
+.sys-status { display: inline-block; padding: 5px 10px; font-size: .75rem; background: #eee3cf; color: #5b442c; border-radius: 20px; white-space: nowrap; }
+.sys-status--CONCLUIDO { background: #e6eddb; color: #3f5526; }
+.sys-status--NAO_COMPARECEU, .sys-status--CANCELADO { background: #f1e0da; color: #7c3229; }
+.sys-workspace { display: grid; grid-template-columns: 255px minmax(0,1fr); min-height: 70vh; }
+.sys-sidebar { padding: 38px 24px; background: #2b1c14; color: #e9ddc8; }
+.sys-sidebar h2 { color: #fff3df; font-size: 1.7rem; margin: 10px 0; }
+.sys-sidebar > p { color: #d2bfa2; font-size: .85rem; }
+.sys-sidebar-caption { color: #d5b36b; font-size: .8rem; }
+.sys-sidebar nav { display: grid; gap: 6px; margin-block: 34px; }
+.sys-sidebar nav a { display: flex; gap: 12px; align-items: center; padding: 13px 10px; color: #ecdfcc; font-size: .87rem; border-radius: 4px; }
+.sys-sidebar nav a.active { background: #4c3625; color: #fff3d8; box-shadow: inset 3px 0 #c9a961; }
+.sys-sidebar-note { border-top: 1px solid #604934; padding-top: 22px; }
+.sys-workspace-main { padding: 42px clamp(20px,3vw,52px) 70px; min-width: 0; }
+.sys-workspace-main .sys-page { padding-block: 0; }
+.sys-workspace-main .sys-booking-grid { grid-template-columns: minmax(0,1fr) 240px; gap: 20px; }
+.sys-toolbar { display: flex; flex-wrap: wrap; align-items: end; gap: 18px; margin-bottom: 28px; }
+.sys-toolbar .sys-field { margin: 0; }
+.sys-date-nav { display: flex; align-items: center; gap: 12px; }
+.sys-date-nav > button { padding: 12px 8px; border: 1px solid var(--color-border); margin-top: 18px; }
+.sys-tabs { display: flex; gap: 8px; }
+.sys-tabs button { padding: 12px 20px; border: 1px solid var(--color-border); }
+.sys-tabs button.is-active { color: var(--color-bg-cream); background: var(--color-brown-800); }
+.sys-period { margin-block: -5px 24px; }
+.sys-appointments { display: grid; gap: 18px; }
+.sys-appointment { display: grid; grid-template-columns: 150px 1fr; gap: 28px; }
+.sys-appointment-date { display: grid; align-content: start; gap: 6px; padding-right: 20px; border-right: 1px solid var(--color-border); }
+.sys-appointment-date > strong { font-family: var(--font-heading); font-size: 2.2rem; }
+.sys-appointment-date > span { font-size: .85rem; }
+.sys-appointment-date > small { color: var(--color-brown-600); }
+.sys-appointment-title { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+.sys-appointment-title h2 { font-size: 1.6rem; }
+.sys-inline-actions { display: flex; gap: 18px; align-items: center; flex-wrap: wrap; margin-top: 18px; font-size: .8rem; }
+.sys-inline-actions > a { text-decoration: underline; text-underline-offset: 3px; }
+.sys-cancel-form { padding-top: 22px; margin-top: 22px; border-top: 1px solid var(--color-border); display: grid; gap: 18px; }
+.sys-management.has-editor { display: grid; grid-template-columns: minmax(0,1fr) 320px; gap: 24px; align-items: start; }
+.sys-manager-list { display: grid; gap: 14px; }
+.sys-manager-item { display: flex; align-items: start; gap: 18px; padding: 24px; }
+.sys-manager-item h2 { font-size: 1.5rem; }
+.sys-manager-item p { font-size: .83rem; margin-top: 7px; }
+.sys-manager-item small { font-size: .75rem; }
+.sys-manager-item > div:nth-child(2) { flex: 1; }
+.sys-manager-icon { padding-top: 5px; }
+.sys-manager-actions { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.sys-manager-actions > button:first-child { padding: 8px; }
+.sys-manager-item.is-inactive { background: #eee8dd; }
+.sys-editor { position: sticky; top: 112px; padding: 24px; }
+.sys-editor .sys-form { margin-top: 0; }
+.sys-checkbox { display: flex; align-items: center; gap: 10px; font-size: .9rem; }
+.sys-checkbox input { width: 18px; height: 18px; accent-color: var(--color-brown-700); }
+.sys-report-totals { display: grid; grid-template-columns: 1fr 1fr; margin-block: 28px 12px; gap: 24px; }
+.sys-report-totals > div { padding: 26px; border-bottom: 2px solid var(--color-border-strong); display: grid; gap: 8px; }
+.sys-report-totals span { color: var(--color-brown-600); font-size: .85rem; }
+.sys-report-totals strong { font-family: var(--font-heading); font-size: 2.5rem; }
+.sys-table-wrap { overflow-x: auto; margin-top: 24px; }
+.sys-table { width: 100%; border-collapse: collapse; text-align: left; font-size: .85rem; }
+.sys-table th { background: #eee3cf; font-weight: 600; }
+.sys-table td, .sys-table th { padding: 18px; border-bottom: 1px solid var(--color-border); }
+.sys-table td:last-child { white-space: nowrap; }
+.sys-content-copy { max-width: 72ch; }
+.sys-content-copy p { margin-block: 20px; }
+.sys-content-copy h2 { margin-top: 35px; }
+.sys-content-copy ul { padding-left: 20px; }
+.sys-home-note { font-size: .8rem; margin-top: 18px; color: var(--color-brown-600); }
+@media(max-width:1150px) {
+  .sys-workspace { grid-template-columns: 215px minmax(0,1fr); }
+  .sys-workspace-main .sys-booking-grid { grid-template-columns: 1fr; }
+  .sys-management.has-editor { grid-template-columns: 1fr; }
+  .sys-editor { position: static; grid-row: 1; }
+}
+@media(max-width:850px) {
+  .sys-access { gap: 30px; grid-template-columns: 1fr; max-width: 650px; }
+  .sys-access-story { position: static; padding-top: 0; }
+  .sys-access-story h1 { font-size: 2.5rem; }
+  .sys-booking-grid { grid-template-columns: 1fr; }
+  .sys-booking-aside { position: static; }
+  .sys-workspace { grid-template-columns: 1fr; }
+  .sys-sidebar { padding: 24px; }
+  .sys-sidebar nav { display: flex; overflow-x: auto; margin-block: 20px 0; padding-bottom: 8px; }
+  .sys-sidebar nav a { flex-shrink: 0; }
+  .sys-sidebar-note { display: none; }
+}
+@media(max-width:550px) {
+  .sys-page { padding-block: 32px 50px; }
+  .sys-heading { align-items: start; flex-direction: column; gap: 18px; }
+  .sys-heading .btn { width: 100%; }
+  .sys-steps { gap: 12px; }
+  .sys-steps li { flex: 1; font-size: .67rem; flex-direction: column; text-align: center; }
+  .sys-booking-main { padding: 22px 18px; }
+  .sys-service-choice { padding: 14px 10px; gap: 9px; }
+  .sys-service-choice > strong { font-size: .85rem; }
+  .sys-service-choice small { font-size: .75rem; }
+  .sys-summary > div { grid-template-columns: 100px 1fr; gap: 12px; }
+  .sys-summary dd { overflow-wrap: anywhere; font-size: .9rem; }
+  .sys-appointment { grid-template-columns: 1fr; gap: 18px; padding: 22px; }
+  .sys-appointment-date { border-right: 0; border-bottom: 1px solid var(--color-border); padding: 0 0 14px; }
+  .sys-appointment-date > strong { font-size: 1.9rem; }
+  .sys-report-totals { grid-template-columns: 1fr; }
+  .sys-manager-item { flex-wrap: wrap; }
+  .sys-manager-actions { width: 100%; justify-content: end; }
+  .sys-toolbar > .field { width: 100%; }
+}

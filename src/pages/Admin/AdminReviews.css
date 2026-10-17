@@ -1,0 +1,168 @@
+.reviews-admin__head { margin-bottom: 28px; }
+.reviews-admin__head h1 { font-size: 2.4rem; margin: 6px 0 0; }
+
+.reviews-admin__overview {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.reviews-admin__score {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 28px;
+  align-items: center;
+}
+.reviews-admin__score > div:first-child {
+  text-align: center;
+}
+.reviews-admin__score strong {
+  display: block;
+  font-family: var(--font-heading);
+  font-size: 3.4rem;
+  color: var(--color-brown-900);
+  line-height: 1;
+}
+.reviews-admin__score .stars { color: var(--color-accent-gold-deep); margin: 6px 0; display: inline-flex; gap: 2px; }
+.reviews-admin__score small {
+  display: block;
+  color: var(--color-brown-500);
+  font-size: 0.85rem;
+  margin-top: 4px;
+}
+
+.reviews-admin__bars {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.reviews-admin__bars li {
+  display: grid;
+  grid-template-columns: 26px 1fr 30px;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.85rem;
+  color: var(--color-brown-500);
+}
+.reviews-admin__bar {
+  height: 8px;
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+.reviews-admin__bar > span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-accent-gold), var(--color-accent-gold-deep));
+  transition: width var(--transition-base);
+}
+.reviews-admin__bar-count { text-align: right; }
+
+.reviews-admin__barbers {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.reviews-admin__barbers li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px dashed var(--color-border);
+}
+.reviews-admin__barbers li:last-child { border-bottom: none; }
+.reviews-admin__barbers strong {
+  display: block;
+  font-size: 0.95rem;
+}
+.reviews-admin__barbers small {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--color-brown-500);
+}
+.reviews-admin__barbers .stars { color: var(--color-accent-gold-deep); margin-left: auto; }
+.reviews-admin__barber-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-accent-gold-light);
+  font-family: var(--font-heading);
+  font-size: 0.85rem;
+  border: 2px solid var(--color-accent-gold);
+  flex-shrink: 0;
+}
+
+.reviews-admin__filter {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.reviews-admin__list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.reviews-admin__item-head {
+  display: grid;
+  grid-template-columns: 38px 1fr auto auto;
+  gap: 12px;
+  align-items: center;
+}
+.reviews-admin__avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--color-brown-800);
+  color: var(--color-accent-gold-light);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.reviews-admin__item-head strong { font-size: 0.95rem; display: block; }
+.reviews-admin__item-head small { color: var(--color-brown-500); font-size: 0.82rem; }
+.reviews-admin__item-head .stars { color: var(--color-accent-gold-deep); display: inline-flex; gap: 2px; }
+.reviews-admin__del {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-bg-paper);
+  color: var(--color-brown-700);
+  transition: all var(--transition-base);
+}
+.reviews-admin__del:hover { background: var(--color-danger); color: #fff; border-color: var(--color-danger); }
+
+.reviews-admin__comment {
+  font-style: italic;
+  color: var(--color-brown-700);
+  line-height: 1.6;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--color-border);
+}
+
+.reviews-admin__empty {
+  text-align: center;
+  color: var(--color-brown-500);
+}
+.reviews-admin__empty svg { color: var(--color-accent-gold); }
+.reviews-admin__empty h3 { font-size: 1.3rem; margin: 12px 0 6px; }
+.reviews-admin__empty p { font-style: italic; }
+
+@media (max-width: 900px) {
+  .reviews-admin__overview { grid-template-columns: 1fr; }
+  .reviews-admin__score { grid-template-columns: 1fr; gap: 18px; }
+}

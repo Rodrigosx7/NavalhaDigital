@@ -1,0 +1,30 @@
+{
+  "data": "2026-10-17T03:16:55.908Z",
+  "ambiente": {
+    "node": "v24.20.0",
+    "plataforma": "win32",
+    "rede": "loopback HTTP",
+    "usuariosAutenticadosDistintos": 50,
+    "concorrencia": 50,
+    "banco": "SQLite temporário",
+    "servicosPorReserva": 1,
+    "gradeMinutos": 10,
+    "janela": "08:00–18:00",
+    "nota": "Cadastro e autenticação são preparação; mede consulta e confirmação autenticadas. Rate limit de login desabilitado somente no fixture."
+  },
+  "consultas": {
+    "requisicoes": 150,
+    "erros": 0,
+    "p95Ms": 148,
+    "maxMs": 149,
+    "falhas": []
+  },
+  "confirmacoes": {
+    "requisicoes": 50,
+    "erros": 0,
+    "p95Ms": 1101,
+    "maxMs": 1103,
+    "falhas": []
+  },
+  "metaAtendidaNesteCenario": true
+}

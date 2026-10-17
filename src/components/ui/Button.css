@@ -1,0 +1,121 @@
+.btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  padding: 14px 28px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  overflow: hidden;
+  isolation: isolate;
+  user-select: none;
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ===== Primary: dourado "latão polido" ===== */
+.btn--primary {
+  background: linear-gradient(180deg, var(--color-accent-gold-light) 0%, var(--color-accent-gold) 50%, var(--color-accent-gold-deep) 100%);
+  color: var(--color-brown-900);
+  box-shadow: var(--shadow-engraved);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.32);
+}
+.btn--primary:hover:not(:disabled) {
+  filter: brightness(1.08);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.2),
+    0 10px 26px rgba(201, 169, 97, 0.4);
+  transform: translateY(-1px);
+}
+.btn--primary:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow:
+    inset 0 2px 5px rgba(0, 0, 0, 0.25),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.btn--primary .btn__sheen {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, transparent 30%, rgba(255, 255, 255, 0.55) 50%, transparent 70%);
+  background-size: 220% 100%;
+  background-position: -200% 0;
+  transition: background-position var(--transition-slow);
+  z-index: -1;
+}
+.btn--primary:hover:not(:disabled) .btn__sheen {
+  background-position: 200% 0;
+}
+
+/* ===== Secondary ===== */
+.btn--secondary {
+  background: transparent;
+  color: var(--color-brown-700);
+  border-color: var(--color-brown-700);
+}
+.btn--secondary:hover:not(:disabled) {
+  background: var(--color-brown-700);
+  color: var(--color-accent-gold-light);
+}
+
+/* ===== Ghost ===== */
+.btn--ghost {
+  background: transparent;
+  color: var(--color-brown-700);
+  padding: 12px 18px;
+}
+.btn--ghost:hover:not(:disabled) {
+  color: var(--color-accent-gold-deep);
+}
+.btn--ghost::after {
+  content: "";
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  bottom: 6px;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform var(--transition-base);
+}
+.btn--ghost:hover::after { transform: scaleX(1); }
+
+/* ===== Danger ===== */
+.btn--danger {
+  background: var(--color-danger);
+  color: #fbf6ec;
+  box-shadow: var(--shadow-sm);
+}
+.btn--danger:hover:not(:disabled) {
+  background: #6e211a;
+  transform: translateY(-1px);
+}
+
+/* ===== Sizes ===== */
+.btn--sm { padding: 9px 18px; font-size: 0.62rem; letter-spacing: 0.18em; }
+.btn--md { padding: 13px 26px; }
+.btn--lg { padding: 18px 36px; font-size: 0.78rem; letter-spacing: 0.26em; }
+
+.btn--full { width: 100%; }
+
+.btn__icon {
+  display: inline-flex;
+  align-items: center;
+}
+.btn__icon svg { width: 14px; height: 14px; }
+
+.btn--lg .btn__icon svg { width: 18px; height: 18px; }

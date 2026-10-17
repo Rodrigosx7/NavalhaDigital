@@ -1,0 +1,7 @@
+{
+  "data": "2026-10-17T03:15:22.910Z",
+  "node": "v24.20.0",
+  "plataforma": "win32",
+  "ambiente": "PostgreSQL nativo temporário em loopback; não é Supabase remoto nem deploy Vercel",
+  "resultado": "passou"
+}

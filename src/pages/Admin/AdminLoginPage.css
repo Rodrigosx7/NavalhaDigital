@@ -1,0 +1,86 @@
+.admin-login {
+  position: relative;
+  min-height: calc(100vh - var(--header-height));
+  display: flex;
+  align-items: center;
+  padding: 60px 0;
+  overflow: hidden;
+}
+.admin-login__bg {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(135deg, rgba(31, 20, 12, 0.86) 0%, rgba(31, 20, 12, 0.7) 100%),
+    repeating-linear-gradient(45deg, transparent, transparent 28px, rgba(201, 169, 97, 0.05) 28px, rgba(201, 169, 97, 0.05) 56px);
+  z-index: -1;
+}
+.admin-login__container {
+  display: flex;
+  justify-content: center;
+}
+.admin-login__card {
+  max-width: 460px;
+  width: 100%;
+}
+.admin-login__brand {
+  text-align: center;
+  margin-bottom: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+}
+.admin-login__monogram {
+  width: 56px;
+  height: 56px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--color-brown-900);
+  color: var(--color-accent-gold-light);
+  border: 2px solid var(--color-accent-gold);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 6px 14px var(--color-shadow);
+}
+.admin-login__brand h1 {
+  font-family: var(--font-heading);
+  font-size: 2rem;
+  margin: 4px 0 0;
+}
+.admin-login__form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.admin-login__error {
+  background: var(--color-danger-light);
+  color: var(--color-danger);
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  border: 1px solid rgba(139, 46, 34, 0.25);
+}
+.admin-login__demo {
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px dashed var(--color-border-strong);
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--color-brown-500);
+  font-style: italic;
+}
+.admin-login__demo code {
+  background: var(--color-bg-secondary);
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  font-family: 'Courier New', monospace;
+  color: var(--color-brown-800);
+  font-style: normal;
+}
+.admin-login__demo strong {
+  color: var(--color-brown-700);
+  font-style: normal;
+  margin-right: 6px;
+}

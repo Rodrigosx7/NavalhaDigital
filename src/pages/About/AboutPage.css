@@ -1,0 +1,155 @@
+.about__hero {
+  padding: 80px 0 60px;
+  background: radial-gradient(circle at 18% 22%, rgba(201, 169, 97, 0.12), transparent 55%);
+}
+.about__hero h1 {
+  font-size: clamp(2.25rem, 5vw, 4rem);
+  margin: 16px 0 16px;
+  max-width: 880px;
+}
+.about__hero p {
+  font-size: 1.1rem;
+  font-style: italic;
+  color: var(--color-brown-600);
+  max-width: 680px;
+  line-height: 1.7;
+}
+
+.about__section { padding: 72px 0; }
+.about__section--alt { background: var(--color-bg-secondary); }
+.about__section-head {
+  text-align: center;
+  margin-bottom: 48px;
+}
+.about__section-head h2 {
+  font-size: clamp(1.85rem, 3.5vw, 2.6rem);
+  margin: 12px 0 0;
+}
+
+.about__grid {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 56px;
+  align-items: center;
+}
+.about__grid h2 { font-size: 2rem; margin: 12px 0 16px; }
+.about__grid p {
+  font-size: 1.05rem;
+  line-height: 1.75;
+  color: var(--color-brown-600);
+  margin-bottom: 14px;
+}
+
+.about__portrait-frame {
+  background: linear-gradient(160deg, var(--color-brown-900) 0%, var(--color-brown-800) 100%);
+  border-radius: var(--radius-md);
+  padding: 36px 28px;
+  color: var(--color-accent-gold-light);
+  position: relative;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.3),
+    var(--shadow-lg);
+  transform: rotate(-1deg);
+  transition: transform var(--transition-base);
+}
+.about__portrait-frame::before,
+.about__portrait-frame::after {
+  content: "";
+  position: absolute;
+  width: 36px;
+  height: 36px;
+  border: 2px solid var(--color-accent-gold);
+  pointer-events: none;
+}
+.about__portrait-frame::before {
+  top: 10px; left: 10px;
+  border-right: none; border-bottom: none;
+}
+.about__portrait-frame::after {
+  bottom: 10px; right: 10px;
+  border-left: none; border-top: none;
+}
+.about__portrait-frame:hover { transform: rotate(0); }
+.about__portrait-inner { text-align: center; display: flex; flex-direction: column; gap: 12px; align-items: center; }
+.about__portrait-inner h3 { font-family: var(--font-heading); color: #f4e7c8; font-size: 2rem; margin: 0; }
+.about__portrait-inner p { font-family: var(--font-heading); font-style: italic; color: rgba(244, 231, 200, 0.85); }
+.about__portrait-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.82rem;
+  color: rgba(244, 231, 200, 0.7);
+}
+.about__portrait-meta span { display: inline-flex; align-items: center; gap: 6px; justify-content: center; }
+
+.timeline {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  position: relative;
+  padding-left: 28px;
+  border-left: 2px solid var(--color-accent-gold);
+}
+.timeline li {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  gap: 24px;
+  align-items: start;
+  position: relative;
+}
+.timeline li::before {
+  content: "";
+  position: absolute;
+  left: -38px;
+  top: 4px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--color-accent-gold);
+  border: 3px solid var(--color-bg-secondary);
+}
+.timeline__year {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  letter-spacing: 0.18em;
+  color: var(--color-accent-gold-deep);
+  font-weight: 600;
+}
+.timeline__body h3 { font-size: 1.35rem; margin: 0 0 4px; }
+.timeline__body p { color: var(--color-brown-600); line-height: 1.6; }
+
+.values {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 24px;
+}
+.values__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--color-brown-900);
+  color: var(--color-accent-gold-light);
+  border: 1px solid rgba(201, 169, 97, 0.35);
+  margin-bottom: 12px;
+}
+.values h3 { font-size: 1.3rem; margin-bottom: 8px; }
+.values p { color: var(--color-brown-600); line-height: 1.6; }
+
+.about__cta {
+  padding: 80px 0 100px;
+  text-align: center;
+  background: radial-gradient(circle at 80% 80%, rgba(139, 90, 60, 0.1), transparent 50%);
+}
+.about__cta h2 { font-size: clamp(2.25rem, 4vw, 3rem); margin-bottom: 12px; }
+.about__cta p { color: var(--color-brown-500); font-style: italic; margin-bottom: 24px; font-size: 1.1rem; }
+.about__cta-actions { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+
+@media (max-width: 880px) {
+  .about__grid { grid-template-columns: 1fr; gap: 36px; }
+  .timeline li { grid-template-columns: 1fr; }
+}

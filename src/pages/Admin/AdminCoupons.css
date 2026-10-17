@@ -1,0 +1,72 @@
+.coupons-admin__head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.coupons-admin__head h1 { font-size: 2.4rem; margin: 6px 0; }
+.coupons-admin__lead { color: var(--color-brown-500); font-style: italic; max-width: 520px; }
+
+.coupons-admin__table { width: 100%; border-collapse: collapse; min-width: 640px; }
+.coupons-admin__table th {
+  text-align: left;
+  padding: 14px;
+  font-family: var(--font-display);
+  font-size: 0.62rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-brown-500);
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-bg-secondary);
+}
+.coupons-admin__table td {
+  padding: 16px 14px;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 0.92rem;
+  color: var(--color-brown-800);
+}
+.coupons-admin__code {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  letter-spacing: 0.18em;
+  padding: 4px 10px;
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+}
+.coupons-admin__table small { color: var(--color-brown-500); font-size: 0.85rem; }
+
+.coupons-admin__del {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-bg-paper);
+  color: var(--color-brown-700);
+  transition: all var(--transition-base);
+}
+.coupons-admin__del:hover { background: var(--color-danger); color: #fff; border-color: var(--color-danger); }
+
+.coupons-admin__form { display: flex; flex-direction: column; gap: 16px; }
+.coupons-admin__services { display: flex; flex-direction: column; gap: 6px; }
+.coupons-admin__services select {
+  padding: 13px 16px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 251, 243, 0.6);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  color: var(--color-brown-900);
+}
+
+.coupons-admin__empty {
+  padding: 40px 20px;
+  text-align: center;
+  color: var(--color-brown-500);
+  font-style: italic;
+}

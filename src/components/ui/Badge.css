@@ -1,0 +1,31 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 12px;
+  border-radius: var(--radius-pill);
+  font-family: var(--font-display);
+  font-size: 0.6rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 600;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.badge--confirmed {
+  background: var(--color-success-light);
+  color: var(--color-success);
+  border-color: rgba(93, 111, 51, 0.25);
+}
+
+.badge--cancelled {
+  background: var(--color-danger-light);
+  color: var(--color-danger);
+  border-color: rgba(139, 46, 34, 0.25);
+}
+
+.badge--completed {
+  background: rgba(201, 169, 97, 0.14);
+  color: var(--color-brown-700);
+  border-color: rgba(168, 133, 64, 0.3);
+}

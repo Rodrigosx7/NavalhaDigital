@@ -1,0 +1,260 @@
+/* ============================================
+   NAVALHA DIGITAL — Design System Tokens
+   Combinação: Academia (materiais nobres)
+   + Luxury (tipografia editorial)
+   ============================================ */
+
+:root {
+  /* === Cores: marrom + bege + dourado envelhecido === */
+  --color-bg-cream: #fbf6ec;       /* bege clarinho, fundo geral */
+  --color-bg-primary: #faf3e3;     /* bege principal */
+  --color-bg-secondary: #f0e3cc;   /* bege mais escuro, seções alternadas */
+  --color-bg-paper: #f4ead7;       /* "papel envelhecido" para cards */
+
+  --color-brown-900: #1f140c;      /* textos principais (mahogany escuro) */
+  --color-brown-800: #2b1a0f;      /* mahogany profundo */
+  --color-brown-700: #3d2418;      /* títulos principais */
+  --color-brown-600: #5c3520;      /* hover */
+  --color-brown-500: #8b5a3c;      /* acentos claros */
+  --color-brown-400: #a37554;      /* acentos suaves */
+  --color-brown-300: #c4a382;      /* traços decorativos */
+
+  --color-accent-gold: #c9a961;    /* latão polido, CTA */
+  --color-accent-gold-light: #d8be7d;
+  --color-accent-gold-deep: #a88540;
+  --color-accent-crimson: #8b2635; /* carmim, uso raro */
+
+  --color-success: #5d6f33;        /* oliva escuro */
+  --color-success-light: #eef1df;
+  --color-danger: #8b2e22;         /* vermelho queimado */
+  --color-danger-light: #f3dfd9;
+
+  --color-border: #d9c5a5;
+  --color-border-strong: #b89a6d;
+  --color-shadow: rgba(31, 20, 12, 0.16);
+  --color-shadow-strong: rgba(31, 20, 12, 0.32);
+  --color-overlay: rgba(31, 20, 12, 0.55);
+
+  /* === Tipografia === */
+  --font-heading: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
+  --font-display: 'Cinzel', 'Cormorant Garamond', serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+  /* === Tamanhos === */
+  --text-hero: clamp(2.5rem, 6vw, 4.75rem);
+  --text-h1: clamp(2.25rem, 5vw, 3.5rem);
+  --text-h2: clamp(1.75rem, 3.5vw, 2.5rem);
+  --text-h3: clamp(1.25rem, 2.5vw, 1.625rem);
+  --text-body: 1rem;
+  --text-small: 0.875rem;
+  --text-micro: 0.75rem;
+
+  /* === Espaçamentos === */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --space-9: 96px;
+  --space-10: 128px;
+
+  /* === Raio, bordas e sombras === */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+  --radius-pill: 999px;
+
+  --shadow-sm: 0 1px 2px var(--color-shadow);
+  --shadow-md: 0 6px 18px var(--color-shadow);
+  --shadow-lg: 0 18px 48px var(--color-shadow-strong);
+  --shadow-engraved: inset 0 1px 0 rgba(255, 255, 255, 0.4),
+                     inset 0 -1px 0 rgba(0, 0, 0, 0.18),
+                     0 4px 14px var(--color-shadow);
+
+  /* === Transições (luxury: lentas e deliberadas) === */
+  --transition-fast: 200ms ease-out;
+  --transition-base: 400ms ease-out;
+  --transition-slow: 700ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+
+  /* === Layout === */
+  --container-max: 1240px;
+  --container-wide: 1400px;
+  --header-height: 88px;
+}
+
+/* ===== Reset ===== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  line-height: 1.65;
+  color: var(--color-brown-900);
+  background-color: var(--color-bg-cream);
+  background-image:
+    radial-gradient(circle at 18% 22%, rgba(201, 169, 97, 0.07), transparent 45%),
+    radial-gradient(circle at 82% 78%, rgba(139, 90, 60, 0.06), transparent 50%),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.12  0 0 0 0 0.08  0 0 0 0 0.05  0 0 0 0.18 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  background-attachment: fixed;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  flex: 1;
+}
+
+/* ===== Tipografia ===== */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--color-brown-800);
+  line-height: 1.15;
+}
+
+h1 { font-size: var(--text-h1); }
+h2 { font-size: var(--text-h2); }
+h3 { font-size: var(--text-h3); }
+
+p {
+  margin: 0;
+}
+
+a {
+  color: var(--color-brown-700);
+  text-decoration: none;
+  transition: color var(--transition-base);
+}
+
+a:hover {
+  color: var(--color-accent-gold-deep);
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: inherit;
+}
+
+input, select, textarea {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+/* ===== Acessibilidade ===== */
+:focus-visible {
+  outline: 2px solid var(--color-accent-gold);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+
+::selection {
+  background: var(--color-accent-gold);
+  color: var(--color-brown-900);
+}
+
+/* ===== Utilitários globais ===== */
+.container {
+  width: 100%;
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: 0 var(--space-5);
+}
+
+.container-wide {
+  max-width: var(--container-wide);
+}
+
+.section {
+  padding: var(--space-9) 0;
+}
+
+@media (max-width: 768px) {
+  .section {
+    padding: var(--space-8) 0;
+  }
+}
+
+/* === Ornamentos "Academia" === */
+.ornate-divider {
+  position: relative;
+  margin: var(--space-6) auto;
+  height: 1px;
+  width: min(80%, 480px);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--color-border-strong) 50%,
+    transparent 100%
+  );
+}
+
+.ornate-divider::before {
+  content: "✦";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--color-bg-cream);
+  color: var(--color-accent-gold);
+  padding: 0 var(--space-3);
+  font-size: 14px;
+}
+
+.eyebrow {
+  display: inline-block;
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--color-accent-gold-deep);
+}
+
+/* === Animações suaves === */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+  html { scroll-behavior: auto; }
+}

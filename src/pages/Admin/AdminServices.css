@@ -1,0 +1,89 @@
+.services-admin__head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.services-admin__head h1 { font-size: 2.4rem; margin: 6px 0; }
+.services-admin__lead { color: var(--color-brown-500); font-style: italic; max-width: 520px; }
+
+.services-admin__list { overflow-x: auto; }
+.services-admin__table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 620px;
+}
+.services-admin__table th {
+  text-align: left;
+  padding: 14px;
+  font-family: var(--font-display);
+  font-size: 0.62rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-brown-500);
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-bg-secondary);
+}
+.services-admin__table td {
+  padding: 16px 14px;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 0.92rem;
+  color: var(--color-brown-800);
+}
+.services-admin__table td strong {
+  display: block;
+  font-family: var(--font-heading);
+  font-size: 1.05rem;
+}
+.services-admin__table td small {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--color-brown-500);
+  max-width: 380px;
+}
+.services-admin__table td svg { margin-right: 4px; color: var(--color-brown-500); }
+
+.services-admin__empty {
+  text-align: center;
+  padding: 32px;
+  color: var(--color-brown-500);
+  font-style: italic;
+}
+
+.services-admin__actions {
+  display: inline-flex;
+  gap: 6px;
+}
+.services-admin__actions button {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-brown-700);
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-bg-paper);
+  transition: all var(--transition-base);
+}
+.services-admin__actions button:hover {
+  background: var(--color-brown-700);
+  color: var(--color-accent-gold-light);
+}
+.services-admin__del:hover { background: var(--color-danger) !important; color: #fff !important; }
+
+.services-admin__form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.services-admin__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+@media (max-width: 540px) {
+  .services-admin__row { grid-template-columns: 1fr; }
+}

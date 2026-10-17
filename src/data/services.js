@@ -1,0 +1,60 @@
+import { generateId } from '../utils/generateId.js'
+
+export const SEED_SERVICES = [
+  {
+    id: 'srv-corte',
+    name: 'Corte Clássico',
+    description: 'Corte tradicional com tesoura e máquina, finalização com pomada.',
+    durationMinutes: 30,
+    price: 50,
+    icon: 'Scissors',
+  },
+  {
+    id: 'srv-barba',
+    name: 'Barba Completa',
+    description: 'Modelagem com navalha, toalha quente e óleos hidratantes.',
+    durationMinutes: 30,
+    price: 45,
+    icon: 'Sparkles',
+  },
+  {
+    id: 'srv-combo',
+    name: 'Corte + Barba',
+    description: 'O ritual completo: corte clássico e barba alinhada com toalha quente.',
+    durationMinutes: 60,
+    price: 85,
+    icon: 'Crown',
+  },
+  {
+    id: 'srv-sobrancelha',
+    name: 'Sobrancelha',
+    description: 'Design com pinça e navalha, mantendo a simetria do rosto.',
+    durationMinutes: 15,
+    price: 25,
+    icon: 'Eye',
+  },
+  {
+    id: 'srv-pigmentacao',
+    name: 'Pigmentação',
+    description: 'Aplicação de tintura específica para barba e cabelo.',
+    durationMinutes: 45,
+    price: 75,
+    icon: 'Brush',
+  },
+  {
+    id: 'srv-pezinho',
+    name: 'Pézinho',
+    description: 'Acabamento rápido do contorno na nuca e costeleta.',
+    durationMinutes: 15,
+    price: 20,
+    icon: 'Minus',
+  },
+  {
+    id: 'srv-tratamento',
+    name: 'Tratamento Capilar',
+    description: 'Hidratação profunda com massagem e óleos essenciais.',
+    durationMinutes: 40,
+    price: 95,
+    icon: 'Droplet',
+  },
+]
