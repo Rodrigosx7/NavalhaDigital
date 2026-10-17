@@ -2,7 +2,7 @@
 
 As Entregas 1 corrigida e 2 continuam sendo a especificação do produto. Esta migração troca a infraestrutura; não acrescenta perfis, pagamentos, descontos ou notificações.
 
-**Situação em 17/10/2026:** projetos Supabase e Vercel criados. Schema privado instalado no Supabase, chave original conferida e conexão do usuário restrito validada com o certificado oficial. Segredos configurados somente em Production na Vercel. Publicação e validação do domínio público em andamento. Testes locais não significam publicação concluída.
+**Situação em 17/10/2026:** publicado em https://navalha-digital-rodrigosx7.vercel.app. Supabase com schema privado e conexão restrita via TLS validado; segredos somente em Production na Vercel. Páginas, API, cadastro, login, persistência, cookies, CSRF e logout conferidos no domínio público. Ver [registro da publicação](compatibilidade/2026-10-17-publicacao.md) para evidências e limites da verificação.
 
 ## 1. Criar os projetos, com acompanhamento
 
