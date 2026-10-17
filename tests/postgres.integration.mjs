@@ -10,6 +10,7 @@ import { mkdtempSync, readFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { randomBytes } from 'node:crypto'
 
 test('PostgreSQL nativo: API, domínio documental, duas instâncias e dois processos', { timeout: 120000 }, async (t) => {
   const config = {
@@ -218,6 +219,19 @@ test('PostgreSQL nativo: API, domínio documental, duas instâncias e dois proce
   })
 
   await t.test('credencial de execução opera com RLS e não pode alterar o schema ou a chave', async () => {
+    // Managed PostgreSQL operators can own the application schema and create
+    // roles without being superusers. Provisioning must work with that access.
+    const operatorPassword = randomBytes(24).toString('hex')
+    await pool.query(`CREATE ROLE navalha_operador WITH LOGIN CREATEROLE PASSWORD '${operatorPassword}'`)
+    await pool.query(`ALTER SCHEMA navalha OWNER TO navalha_operador;
+      DO $$ DECLARE t text; BEGIN
+        FOR t IN SELECT tablename FROM pg_tables WHERE schemaname='navalha' LOOP
+          EXECUTE format('ALTER TABLE navalha.%I OWNER TO navalha_operador',t);
+        END LOOP;
+      END $$`)
+    const operatorUrl = new URL(config.connectionString)
+    operatorUrl.username = 'navalha_operador'
+    operatorUrl.password = operatorPassword
     const cwd = mkdtempSync(join(tmpdir(), 'navalha-runtime-test-'))
     const child = spawn(process.execPath, [fileURLToPath(new URL('../scripts/provision-user.mjs', import.meta.url))], {
       cwd,
@@ -225,7 +239,7 @@ test('PostgreSQL nativo: API, domínio documental, duas instâncias e dois proce
       env: {
         ...process.env,
         DATABASE_URL: config.connectionString,
-        DATABASE_MIGRATION_URL: config.connectionString,
+        DATABASE_MIGRATION_URL: operatorUrl.toString(),
         NAVALHA_ENCRYPTION_KEY: config.key.toString('base64'),
         NAVALHA_ALLOW_LOCAL_POSTGRES: '1',
         APP_ORIGIN: 'https://teste.example.com',
@@ -240,6 +254,8 @@ test('PostgreSQL nativo: API, domínio documental, duas instâncias e dois proce
       child.on('close', resolve)
     })
     assert.equal(code, 0, stderr)
+    const role = (await pool.query("SELECT rolsuper,rolcreatedb,rolcreaterole,rolreplication,rolbypassrls,rolinherit FROM pg_roles WHERE rolname='navalha_app'")).rows[0]
+    assert.deepEqual(Object.values(role), [false, false, false, false, false, false])
     const encoded = readFileSync(join(cwd, '.secrets/vercel.env'), 'utf8')
     const url = encoded
       .split('\n')

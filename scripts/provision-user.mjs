@@ -17,8 +17,13 @@ try {
   await client.query(
     "DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname='navalha_app') THEN CREATE ROLE navalha_app; END IF; END $$",
   )
+  // Managed operators are not superusers and cannot alter SUPERUSER, even to
+  // turn it off. A fresh role has no elevated attributes; refuse an unsafe
+  // existing role instead of requiring superuser access to modify it.
+  const role = (await client.query("SELECT rolsuper,rolcreatedb,rolcreaterole,rolreplication,rolbypassrls FROM pg_roles WHERE rolname='navalha_app'")).rows[0]
+  if (Object.values(role).some(Boolean)) throw new Error('Usuário de execução possui privilégios elevados; configuração recusada.')
   // The only interpolated value is a locally generated 64-character hex string.
-  await client.query(`ALTER ROLE navalha_app WITH LOGIN PASSWORD '${password}' NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT NOBYPASSRLS`)
+  await client.query(`ALTER ROLE navalha_app WITH LOGIN PASSWORD '${password}' NOINHERIT`)
   await client.query('GRANT USAGE ON SCHEMA navalha TO navalha_app')
   await client.query('GRANT SELECT,INSERT,UPDATE,DELETE ON ALL TABLES IN SCHEMA navalha TO navalha_app')
   await client.query('REVOKE INSERT,UPDATE,DELETE ON navalha.configuracao FROM navalha_app')

@@ -2,13 +2,13 @@
 
 As Entregas 1 corrigida e 2 continuam sendo a especificação do produto. Esta migração troca a infraestrutura; não acrescenta perfis, pagamentos, descontos ou notificações.
 
-**Situação:** código preparado para PostgreSQL e Vercel. Os projetos na nuvem ainda não foram criados pelo usuário. Os comandos abaixo só serão executados contra a nuvem quando os projetos e as credenciais estiverem configurados. Testes locais não significam publicação concluída.
+**Situação em 17/10/2026:** projetos Supabase e Vercel criados. Schema privado instalado no Supabase, chave original conferida e conexão do usuário restrito validada com o certificado oficial. Segredos configurados somente em Production na Vercel. Publicação e validação do domínio público em andamento. Testes locais não significam publicação concluída.
 
 ## 1. Criar os projetos, com acompanhamento
 
 1. No Supabase, criar um projeto dedicado ao Navalha Digital. Escolher uma região próxima aos usuários e às funções da Vercel. Guardar a senha do banco em um gerenciador de senhas; não enviar pelo chat.
 2. Em **Connect**, copiar a conexão PostgreSQL do **Transaction pooler** para execução da API. Copiar separadamente a conexão direta ou **Session pooler** para migração/administração; a conexão direta pode exigir IPv6.
-3. Na Vercel, criar/vincular um projeto Vite na pasta atual. Não há repositório Git neste workspace; podemos usar a CLI sem precisar tornar o código ou os documentos públicos. O login será feito pelo próprio usuário.
+3. Na Vercel, criar/vincular um projeto Vite na pasta atual. O projeto `navalha-digital` está conectado a `Rodrigosx7/NavalhaDigital`, branch `main`. Os documentos originais, bancos e segredos permanecem fora do Git. Um push para `main` pode iniciar uma publicação automaticamente; configurar o banco e as variáveis primeiro.
 4. Identificar o domínio de produção atribuído pela Vercel; usar essa origem exata em `APP_ORIGIN`, incluindo `https://`, sem caminho ou barra final.
 
 Não é necessário habilitar Supabase Auth nem usar `supabase-js`. O login existente permanece na API; os dados ficam no schema privado `navalha`, que não deve ser adicionado aos schemas expostos da Data API.
@@ -34,6 +34,8 @@ Preencher **privadamente** `.env.local`:
 | `NAVALHA_DATABASE_CA` | Somente se necessário, certificado CA confiável em PEM. Não desabilitar verificação TLS. |
 
 Copiar as URIs pelo painel e substituir a senha localmente. Caracteres reservados na senha precisam estar codificados para uma URI. Não colar URIs, senhas ou arquivos `.env` no chat.
+
+Se a conexão exigir a CA do Supabase, baixar **Download certificate** em **Database → Settings → SSL configuration** e configurar o conteúdo PEM em `NAVALHA_DATABASE_CA`. O erro `SELF_SIGNED_CERT_IN_CHAIN` é resolvido fornecendo a CA oficial ao driver, sem desativar a validação TLS. No `.env`, pode-se usar uma string entre aspas com `\n` literais; na interface da Vercel, colar o PEM completo com suas quebras de linha.
 
 ## 3. Criar o schema e decidir sobre os dados locais
 
@@ -66,6 +68,8 @@ npm run db:usuario
 O operador usa `DATABASE_MIGRATION_URL` para criar o login `navalha_app`, sem privilégios de superusuário, criação de bancos/roles ou bypass de RLS. O usuário recebe acesso às tabelas do sistema pelas políticas da API, mas não pode alterar o schema ou a configuração da chave. As permissões de cliente/barbeiro continuam verificadas em cada endpoint.
 
 O comando salva as variáveis em `.secrets/vercel.env` sem mostrar senhas. A URI é derivada de `DATABASE_URL`; por isso ela deve apontar para o Transaction pooler correto antes do comando. Após a criação, substituir a URI owner em `DATABASE_URL` pela URI restrita desse arquivo e executar `npm run db:check` novamente. Guardar `DATABASE_MIGRATION_URL` somente na máquina do operador.
+
+O operador de um PostgreSQL gerenciado não precisa ser superusuário. O script confere que o login de execução não possui atributos elevados e só altera as propriedades permitidas ao operador. Se a CA foi necessária para conectar, incluí-la também na configuração de execução da Vercel; ela é independente da URI gerada.
 
 Repetir `db:usuario` com um usuário já existente é recusado. Para uma rotação intencional, usar `npm run db:usuario -- --rotacionar`; ele grava um novo arquivo `.secrets/vercel-rotacao-<data>.env` antes de confirmar a senha no banco. Atualizar a variável correspondente na Vercel e republicar. Arquivos anteriores não são sobrescritos.
 
