@@ -23,3 +23,19 @@ test('uma rejeição definitiva permite nova proposta com nova chave', async () 
   await attempt.enviar({ path: '/agendamentos', method: 'POST', body: { dataHora: '2026-10-23T11:00' } })
   assert.notEqual(calls[0].headers['Idempotency-Key'], calls[1].headers['Idempotency-Key'])
 })
+
+test('edição encerra na inelegibilidade e permite revisão apenas das escolhas rejeitadas', async () => {
+  for (const [error, esperado] of [
+    [{ status: 422, codigo: 'RESERVA_INELEGIVEL' }, 'ENCERRAR'],
+    [{ status: 403, codigo: 'RESERVA_SEM_ACESSO' }, 'ENCERRAR'],
+    [{ status: 404, codigo: 'RESERVA_NAO_ENCONTRADA' }, 'ENCERRAR'],
+    [{ status: 409 }, 'REVISAR'],
+    [{ status: 422 }, 'REVISAR'],
+    [{ status: 500 }, 'VERIFICAR'],
+    [new TypeError('Sem conexão'), 'VERIFICAR'],
+  ]) {
+    const tentativa = new ConfirmacaoReserva(async () => { throw error })
+    await assert.rejects(tentativa.enviar({ path: '/agendamentos/401', method: 'PUT', body: {} }))
+    assert.equal(tentativa.acaoAposErro(error, true), esperado)
+  }
+})

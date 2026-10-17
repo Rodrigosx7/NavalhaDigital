@@ -20,16 +20,17 @@ export class AgendaService {
     exigir(actor.perfil === 'BARBEIRO', 'Operação exclusiva do barbeiro.', 403)
   }
   acessivel(actor, reserva) {
-    exigir(reserva, 'Agendamento não encontrado.', 404)
+    exigir(reserva, 'Agendamento não encontrado.', 404, 'RESERVA_NAO_ENCONTRADA')
     exigir(
       actor.perfil === 'CLIENTE' ? reserva.clienteId === actor.id : reserva.barbeiroId === actor.id,
       'Você não tem acesso a este agendamento.',
       403,
+      'RESERVA_SEM_ACESSO',
     )
     return reserva
   }
   elegivel(reserva) {
-    exigir(reserva.status === 'PENDENTE' && reserva.dataHora > this.clock(), 'A operação exige uma reserva pendente que ainda não começou.')
+    exigir(reserva.status === 'PENDENTE' && reserva.dataHora > this.clock(), 'A operação exige uma reserva pendente que ainda não começou.', 422, 'RESERVA_INELEGIVEL')
   }
   revisar(proposta, revisao) {
     if (revisao !== undefined)

@@ -7,6 +7,7 @@ import { createApplication } from '../server/app.mjs'
 import { decifrar } from '../server/security.mjs'
 import { spawn, spawnSync } from 'node:child_process'
 import { DatabaseSync } from 'node:sqlite'
+import { Cliente, Barbeiro } from '../server/domain.mjs'
 
 async function ambiente(context, extra = {}) {
   const directory = mkdtempSync(join(tmpdir(), 'navalha-test-'))
@@ -50,6 +51,7 @@ test('cadastro único, autorização profissional e dados pessoais protegidos', 
   assert.equal(raw.includes('Teste-seguro-2026!'), false)
   assert.equal((await env.sessao()('/agendamentos')).status, 401)
   assert.equal((await env.cliente('/clientes')).status, 403)
+  assert.equal((await env.cliente('/disponibilidades', 'POST', { diaSemana: 'SEXTA', horaInicio: '08:00', horaFim: '18:00', intervaloMinutos: 30 })).status, 403)
 })
 
 test('múltiplos serviços sem descontos e valores históricos imutáveis', async context => {
@@ -83,6 +85,57 @@ test('UC09 mantém ID e PENDENTE, recalcula e conserva original em rejeição', 
   assert.equal(rejected.status, 409)
   assert.deepEqual((await env.cliente(`/agendamentos/${original.id}`)).agendamento, changed.agendamento)
   assert.equal((await env.cliente(`/agendamentos/${original.id}`, 'PUT', { dataHora: '2026-10-23T11:00', servicoIds: [env.corte.id] })).status, 403)
+})
+
+test('UC09 distingue perda de elegibilidade de escolhas rejeitadas, sem alterar a reserva', async context => {
+  const env = await ambiente(context)
+  const reserva = (await env.criar()).agendamento
+  const proposta = { dataHora: '2026-10-23T11:00', servicoIds: [env.corte.id] }
+  await env.cliente(`/agendamentos/${reserva.id}/cancelar`, 'POST', { motivo: 'Cancelado em outra sessão' })
+  const cancelada = (await env.cliente(`/agendamentos/${reserva.id}`)).agendamento
+  const rejeicao = await env.barbeiro(`/agendamentos/${reserva.id}`, 'PUT', proposta)
+  assert.equal(rejeicao.status, 422)
+  assert.equal(rejeicao.codigo, 'RESERVA_INELEGIVEL')
+  assert.deepEqual((await env.cliente(`/agendamentos/${reserva.id}`)).agendamento, cancelada)
+  const iniciada = (await env.criar()).agendamento
+  env.agora('2026-10-23T10:00:00')
+  const tarde = await env.barbeiro(`/agendamentos/${iniciada.id}`, 'PUT', proposta)
+  assert.equal(tarde.codigo, 'RESERVA_INELEGIVEL')
+  env.agora('2026-10-23T10:30:00')
+  await env.barbeiro(`/agendamentos/${iniciada.id}/status`, 'POST', { status: 'CONCLUIDO' })
+  assert.equal((await env.barbeiro(`/agendamentos/${iniciada.id}`, 'PUT', proposta)).codigo, 'RESERVA_INELEGIVEL')
+})
+
+test('classes Cliente e Barbeiro executam os comandos UML na mesma agenda persistida', async context => {
+  const env = await ambiente(context)
+  const dados = (await env.cliente('/auth/sessao')).usuario
+  const cliente = new Cliente(dados, env.app.usuarios)
+  const barbeiro = new Barbeiro(env.profissional, env.app.usuarios)
+  assert.equal((await cliente.consultarAgenda(barbeiro.id))[0].id, env.janela.id)
+  const reserva = await cliente.agendar(barbeiro.id, [env.corte.id], '2026-10-23T10:00')
+  const alterada = await barbeiro.alterarAgendamento(reserva.id, '2026-10-23T09:00', [env.corte.id, env.barba.id])
+  assert.equal(alterada.id, reserva.id)
+  assert.equal(alterada.valorTotal, 65)
+  assert.equal(alterada.duracaoTotalMinutos, 50)
+  assert.equal((await barbeiro.consultarAgenda())[0].id, reserva.id)
+  assert.equal(JSON.stringify(barbeiro).includes('store'), false)
+  await assert.rejects(cliente.cancelarAgendamento(999999, 'Não existe'), error => error.status === 404)
+  await cliente.cancelarAgendamento(reserva.id, 'Imprevisto do cliente')
+  assert.equal((await env.barbeiro(`/agendamentos/${reserva.id}`)).agendamento.status, 'CANCELADO')
+  assert.deepEqual(await barbeiro.gerarRelatorio('2026-10-23', '2026-10-23'), [])
+})
+
+test('operações herdadas de Usuario validam cadastro, autenticação e atualização sem trocar perfil', async context => {
+  const env = await ambiente(context)
+  const candidato = new Cliente({}, env.app.usuarios)
+  const id = await candidato.cadastrar({ nome: 'Cliente de domínio', email: 'dominio@example.com', telefone: '38999990001', senha: 'Teste-seguro-2026!' })
+  const cliente = new Cliente(await env.app.store.getUsuario(id), env.app.usuarios)
+  assert.equal(await cliente.autenticar('dominio@example.com', 'Teste-seguro-2026!'), true)
+  assert.equal(await cliente.autenticar('dominio@example.com', 'Outra-senha-errada'), false)
+  await assert.rejects(cliente.atualizarDados({ perfil: 'BARBEIRO' }))
+  const atualizado = await cliente.atualizarDados({ nome: 'Nome atualizado' })
+  assert.equal(atualizado.perfil, 'CLIENTE')
+  assert.equal((await env.app.store.getUsuario(id)).nome, 'Nome atualizado')
 })
 
 test('cancelamento sem antecedência adicional, com motivo e sem reabrir estado final', async context => {

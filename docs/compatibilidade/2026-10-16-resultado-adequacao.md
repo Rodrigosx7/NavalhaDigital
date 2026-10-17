@@ -1,5 +1,7 @@
 # Resultado da adequação documental
 
+**Conferência posterior dos diagramas:** veja [correção e rastreabilidade de 17/10](2026-10-17-resultado-diagramas.md), incluindo os resultados de UC09 na interface e os comandos das classes de usuário.
+
 **Atualização posterior:** a adaptação para Supabase/PostgreSQL e Vercel está descrita em [2026-10-17-supabase-vercel.md](2026-10-17-supabase-vercel.md). Os números abaixo registram a entrega local original de 16/10.
 
 Verificação em 16/10/2026, no ambiente local Windows com Node v24.20.0. A referência principal permanece o pacote original preservado em `../referencias/pacote-completo/`.

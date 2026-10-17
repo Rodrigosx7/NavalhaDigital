@@ -30,6 +30,10 @@ Antes da publicação, passaram os 38 testes gerais, os sete testes de PostgreSQ
 
 ## Preparação operacional restante
 
+**Atualização posterior em 17/10:** um profissional real concluiu o cadastro e as 12 janelas foram configuradas/verificadas: segunda a sábado, 09h–11h e 12h–20h, grade de 30 minutos, domingo sem atendimento. O parágrafo seguinte registra o estado inicial da publicação.
+
 O banco remoto começou apenas com o catálogo documental. Não foram importados automaticamente cadastros do SQLite nem criados barbeiros ou disponibilidades fictícias. Um profissional real precisa receber autorização, cadastrar sua conta e configurar suas janelas para abrir horários aos clientes.
 
 Reservas, conflitos simultâneos, reagendamento UC09, relatórios e restauração têm cobertura local com PostgreSQL nativo; esses fluxos ainda não foram exercitados com profissionais reais na produção. Esta verificação não comprova disponibilidade mensal nem substitui a rotina de backups e monitoramento.
+
+A correção posterior de UC09 e a rastreabilidade dos diagramas estão em [resultado dos diagramas](2026-10-17-resultado-diagramas.md). Os cenários de falha dessa rodada foram ensaiados com contas/banco temporários, preservando a operação real.

@@ -1,9 +1,9 @@
 export class ErroDominio extends Error {
-  constructor(message, status = 422) { super(message); this.status = status }
+  constructor(message, status = 422, codigo) { super(message); this.status = status; this.codigo = codigo }
 }
 
-export function exigir(condicao, mensagem, status = 422) {
-  if (!condicao) throw new ErroDominio(mensagem, status)
+export function exigir(condicao, mensagem, status = 422, codigo) {
+  if (!condicao) throw new ErroDominio(mensagem, status, codigo)
 }
 
 export const DIAS = ['DOMINGO', 'SEGUNDA', 'TERCA', 'QUARTA', 'QUINTA', 'SEXTA', 'SABADO']
@@ -56,12 +56,31 @@ export function sobrepoe(inicio, duracao, outroInicio, outraDuracao) {
 }
 
 export class Usuario {
-  constructor(data) { exigir(new.target !== Usuario, 'Usuario é abstrato.'); Object.assign(this, data) }
-  atualizarDados(data) { Object.assign(this, data) }
+  #operacoes
+  constructor(data, operacoes) { exigir(new.target !== Usuario, 'Usuario é abstrato.'); Object.assign(this, data); this.#operacoes = operacoes }
+  operar(nome, ...args) { exigir(this.#operacoes, 'Operações do usuário não foram vinculadas.'); return this.#operacoes[nome](this, ...args) }
+  cadastrar(data) { return this.operar('cadastrar', data) }
+  autenticar(email, senha) { return this.operar('autenticar', email, senha) }
+  atualizarDados(data) { return this.operar('atualizarDados', data) }
 }
 
-export class Cliente extends Usuario {}
-export class Barbeiro extends Usuario {}
+export class Cliente extends Usuario {
+  constructor(data, operacoes) { exigir(!data.perfil || data.perfil === 'CLIENTE', 'Perfil incompatível.'); super({ ...data, perfil: 'CLIENTE' }, operacoes) }
+  consultarAgenda(barbeiroId) { return this.operar('consultarDisponibilidades', barbeiroId) }
+  agendar(barbeiroId, servicoIds, dataHora, { chave, ...opcoes } = {}) { return this.operar('agendar', { ...opcoes, barbeiroId, servicoIds, dataHora }, chave) }
+  cancelarAgendamento(id, motivo) { return this.operar('cancelarAgendamento', id, motivo) }
+}
+export class Barbeiro extends Usuario {
+  constructor(data, operacoes) { exigir(!data.perfil || data.perfil === 'BARBEIRO', 'Perfil incompatível.'); super({ ...data, perfil: 'BARBEIRO' }, operacoes) }
+  consultarAgenda() { return this.operar('consultarAgenda') }
+  agendar(clienteId, servicoIds, dataHora, { chave, ...opcoes } = {}) { return this.operar('agendar', { barbeiroId: this.id, ...opcoes, clienteId, servicoIds, dataHora }, chave) }
+  cancelarAgendamento(id, motivo) { return this.operar('cancelarAgendamento', id, motivo) }
+  cadastrarHorarios(janela, id) { return this.operar('cadastrarHorarios', janela, id) }
+  cadastrarServicos(servico, id) { return this.operar('cadastrarServicos', servico, id) }
+  alterarAgendamento(id, novaDataHora, servicoIds, { chave, ...opcoes } = {}) { return this.operar('alterarAgendamento', id, { ...opcoes, dataHora: novaDataHora, servicoIds }, chave) }
+  gerarRelatorio(inicio, fim) { return this.operar('gerarRelatorio', inicio, fim) }
+  alterarStatus(id, status) { return this.operar('alterarStatus', id, status) }
+}
 
 export class Servico {
   constructor(data) {

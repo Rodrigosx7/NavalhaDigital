@@ -2,11 +2,12 @@ import { createServer } from 'node:http'
 import { resolve } from 'node:path'
 import { createSqliteRepository } from './repository.mjs'
 import { AgendaService } from './booking.mjs'
-import { ErroDominio, Servico, agoraLocal, centavos, exigir, inteiro, texto, validarData } from './domain.mjs'
-import { hashSenha, verificarSenha, token, hashToken } from './security.mjs'
+import { Barbeiro, Cliente, ErroDominio, agoraLocal, exigir, inteiro } from './domain.mjs'
+import { UsuariosService, emailValido } from './users.mjs'
+import { token, hashToken } from './security.mjs'
 
 export function createApplication(options = {}) {
-  let store, agenda
+  let store, agenda, usuarios
   const clock = options.clock ?? agoraLocal
   const ready = (async () => {
     store =
@@ -17,6 +18,7 @@ export function createApplication(options = {}) {
       ))
     await store.ready?.()
     agenda = new AgendaService(store, clock)
+    usuarios = new UsuariosService(store, agenda, clock)
     if (!store.postgres && options.authorizedInvitations)
       await store.transaction(async () => {
         await store.sql.prepare('DELETE FROM convites WHERE utilizado=0').run()
@@ -35,27 +37,6 @@ export function createApplication(options = {}) {
     options.origins ?? ['http://127.0.0.1:5174', 'http://localhost:5174', 'http://127.0.0.1:5180', 'http://localhost:5180'],
   )
   let authActive = 0
-  const emailValido = (email) => {
-    const value = texto(email, 'E-mail', 5, 254).toLowerCase()
-    exigir(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value), 'E-mail inválido.')
-    return value
-  }
-  const dadosConta = (data) => ({
-    nome: texto(data.nome, 'Nome', 3, 100),
-    email: emailValido(data.email),
-    telefone: texto(data.telefone, 'Telefone', 10, 22),
-    ...(data.dataNascimento ? { dataNascimento: validarData(data.dataNascimento) } : {}),
-    endereco: texto(data.endereco ?? '', 'Endereço', 0, 300),
-    registroProfissional: texto(data.registroProfissional ?? '', 'Registro profissional', 0, 100),
-    bio: texto(data.bio ?? '', 'Biografia', 0, 1000),
-  })
-  const validarConta = (data) => {
-    exigir(
-      (data.telefone.match(/\d/g) ?? []).length >= 10 && (data.telefone.match(/\d/g) ?? []).length <= 11,
-      'Telefone deve ter 10 ou 11 dígitos.',
-    )
-    if (data.dataNascimento) exigir(data.dataNascimento <= clock().slice(0, 10), 'Data de nascimento futura inválida.')
-  }
   const safeUser = (usuario) => {
     if (!usuario) return null
     const { senhaHash, ...safe } = usuario
@@ -132,7 +113,7 @@ export function createApplication(options = {}) {
         rawToken && /^[a-f0-9]{64}$/.test(rawToken)
           ? await store.sql.prepare('SELECT * FROM sessoes WHERE token_hash=? AND expira>?').get(hashToken(rawToken), Date.now())
           : null
-      const actor = session ? safeUser(await store.getUsuario(session.usuario_id)) : null
+      const actor = session ? usuarios.usuario(safeUser(await store.getUsuario(session.usuario_id))) : null
       const requireActor = () => {
         exigir(actor, 'Entre na sua conta para continuar.', 401)
         if (writing) exigir(request.headers['x-csrf-token'] === session.csrf, 'Sessão de confirmação inválida. Atualize a página.', 403)
@@ -169,43 +150,16 @@ export function createApplication(options = {}) {
             exigir(await store.admitirAutenticacao(attemptKey), 'Muitas tentativas. Aguarde alguns minutos.', 429)
           if (path === '/auth/login') {
             const row = await store.sql.prepare('SELECT * FROM usuarios WHERE email_indice=?').get(store.emailIndex(email))
-            exigir(row && (await verificarSenha(data.senha, row.senha_hash)), 'E-mail ou senha incorretos.', 401)
+            const account = row ? usuarios.usuario(store.usuario(row)) : null
+            exigir(account && (await account.autenticar(email, data.senha)), 'E-mail ou senha incorretos.', 401)
             await store.limparAutenticacao(attemptKey)
             if (rawToken) await store.sql.prepare('DELETE FROM sessoes WHERE token_hash=?').run(hashToken(rawToken))
             return send(200, await sessionFor(row.id, response))
           }
           const perfil = data.perfil ?? 'CLIENTE'
           exigir(['CLIENTE', 'BARBEIRO'].includes(perfil), 'Perfil inválido.')
-          const invitationHash = typeof data.codigoAutorizacao === 'string' ? hashToken(data.codigoAutorizacao.trim()) : ''
-          const invitationValid = async () =>
-            await store.sql
-              .prepare('SELECT * FROM convites WHERE email_indice=? AND segredo_hash=? AND utilizado=0 AND expira>?')
-              .get(store.emailIndex(email), invitationHash, Date.now())
-          if (perfil === 'BARBEIRO')
-            exigir(await invitationValid(), 'Cadastro profissional exige um código de autorização válido, entregue pela barbearia.', 403)
-          const account = dadosConta(data)
-          validarConta(account)
-          if (perfil === 'BARBEIRO') texto(account.registroProfissional, 'Registro profissional', 2, 100)
-          const passwordHash = await hashSenha(data.senha)
-          let id
-          try {
-            id = await store.transaction(async () => {
-              if (perfil === 'BARBEIRO') exigir(await invitationValid(), 'Código de autorização expirou ou já foi utilizado.', 403)
-              const createdId = Number(
-                (
-                  await store.sql
-                    .prepare('INSERT INTO usuarios(perfil,email_indice,dados,senha_hash,data_cadastro) VALUES(?,?,?,?,?)')
-                    .run(perfil, store.emailIndex(email), store.encode(account), passwordHash, clock())
-                ).lastInsertRowid,
-              )
-              if (perfil === 'BARBEIRO') await store.sql.prepare('UPDATE convites SET utilizado=1 WHERE segredo_hash=?').run(invitationHash)
-              return createdId
-            })
-          } catch (error) {
-            if (error.code === '23505' || String(error.message).includes('UNIQUE'))
-              throw new ErroDominio('Este e-mail já está cadastrado.', 409)
-            throw error
-          }
+          const candidato = perfil === 'BARBEIRO' ? new Barbeiro({}, usuarios) : new Cliente({}, usuarios)
+          const id = await candidato.cadastrar(data)
           await store.limparAutenticacao(attemptKey)
           return send(201, await sessionFor(id, response))
         } finally {
@@ -219,23 +173,7 @@ export function createApplication(options = {}) {
         return send(200, { ok: true })
       }
       if (method === 'PUT' && path === '/conta') {
-        exigir(!Object.hasOwn(data, 'perfil') && !Object.hasOwn(data, 'senha'), 'Esta operação atualiza apenas os dados cadastrais.')
-        const account = dadosConta({ ...actor, ...data })
-        validarConta(account)
-        if (actor.perfil === 'BARBEIRO') {
-          exigir(account.email === actor.email, 'A alteração do e-mail profissional exige nova autorização fora do sistema.')
-          texto(account.registroProfissional, 'Registro profissional', 2, 100)
-        }
-        try {
-          await store.sql
-            .prepare('UPDATE usuarios SET dados=?,email_indice=? WHERE id=?')
-            .run(store.encode(account), store.emailIndex(account.email), actor.id)
-        } catch (error) {
-          if (error.code === '23505' || String(error.message).includes('UNIQUE'))
-            throw new ErroDominio('Este e-mail já está cadastrado.', 409)
-          throw error
-        }
-        return send(200, { usuario: await store.getUsuario(actor.id) })
+        return send(200, { usuario: await actor.atualizarDados(data) })
       }
       if (method === 'GET' && path === '/clientes') {
         agenda.profissional(actor)
@@ -252,40 +190,7 @@ export function createApplication(options = {}) {
       const serviceMatch = path.match(/^\/servicos\/(\d+)$/)
       if ((path === '/servicos' && method === 'POST') || (serviceMatch && method === 'PUT')) {
         agenda.profissional(actor)
-        const savedService = await store.transaction(async () => {
-          const id = serviceMatch ? Number(serviceMatch[1]) : null
-          const current = id ? (await store.servicos()).find((item) => item.id === id) : null
-          if (id) exigir(current, 'Serviço não encontrado.', 404)
-          const service = new Servico({ ...current, ...data })
-          if (id)
-            await store.sql
-              .prepare('UPDATE servicos SET nome=?,descricao=?,categoria=?,preco_centavos=?,duracao=?,ativo=? WHERE id=?')
-              .run(
-                service.nome,
-                service.descricao,
-                service.categoria,
-                centavos(service.preco),
-                service.duracaoMinutos,
-                Number(service.ativo),
-                id,
-              )
-          else
-            service.id = Number(
-              (
-                await store.sql
-                  .prepare('INSERT INTO servicos(nome,descricao,categoria,preco_centavos,duracao,ativo) VALUES(?,?,?,?,?,?)')
-                  .run(
-                    service.nome,
-                    service.descricao,
-                    service.categoria,
-                    centavos(service.preco),
-                    service.duracaoMinutos,
-                    Number(service.ativo),
-                  )
-              ).lastInsertRowid,
-            )
-          return { ...service, id: id ?? service.id }
-        })
+        const savedService = await actor.cadastrarServicos(data, serviceMatch ? Number(serviceMatch[1]) : null)
         return send(serviceMatch ? 200 : 201, { servico: savedService })
       }
       if (method === 'GET' && path === '/disponibilidades') {
@@ -293,10 +198,12 @@ export function createApplication(options = {}) {
         return send(200, { disponibilidades: await store.janelas(actor.id) })
       }
       const windowMatch = path.match(/^\/disponibilidades\/(\d+)$/)
-      if ((method === 'POST' && path === '/disponibilidades') || (method === 'PUT' && windowMatch))
+      if ((method === 'POST' && path === '/disponibilidades') || (method === 'PUT' && windowMatch)) {
+        agenda.profissional(actor)
         return send(windowMatch ? 200 : 201, {
-          disponibilidade: await agenda.salvarJanela(actor, data, windowMatch ? Number(windowMatch[1]) : null),
+          disponibilidade: await actor.cadastrarHorarios(data, windowMatch ? Number(windowMatch[1]) : null),
         })
+      }
       if (method === 'GET' && path === '/horarios') {
         const barbeiroId = inteiro(Number(url.searchParams.get('barbeiroId')), 'Barbeiro')
         const ids = (url.searchParams.get('servicoIds') ?? '').split(',').filter(Boolean).map(Number)
@@ -307,11 +214,19 @@ export function createApplication(options = {}) {
         })
       }
       if (path === '/agendamentos' && method === 'POST')
-        return send(201, { agendamento: await agenda.criar(actor, data, request.headers['idempotency-key'] ?? null) })
+        return send(201, {
+          agendamento: await actor.agendar(
+            actor.perfil === 'CLIENTE' ? data.barbeiroId : data.clienteId,
+            data.servicoIds,
+            data.dataHora,
+            { ...data, chave: request.headers['idempotency-key'] ?? null },
+          ),
+        })
       if (path === '/agendamentos' && method === 'GET') {
-        const column = actor.perfil === 'CLIENTE' ? 'cliente_id' : 'barbeiro_id'
-        const rows = await store.sql.prepare(`SELECT * FROM agendamentos WHERE ${column}=? ORDER BY data_hora`).all(actor.id)
-        return send(200, { agendamentos: await store.mapReservas(rows), agora: clock() })
+        const agendamentos = actor.perfil === 'BARBEIRO'
+          ? await actor.consultarAgenda()
+          : await store.mapReservas(await store.sql.prepare('SELECT * FROM agendamentos WHERE cliente_id=? ORDER BY data_hora').all(actor.id))
+        return send(200, { agendamentos, agora: clock() })
       }
       const bookingMatch = path.match(/^\/agendamentos\/(\d+)(?:\/(cancelar|status))?$/)
       if (bookingMatch) {
@@ -319,19 +234,22 @@ export function createApplication(options = {}) {
           action = bookingMatch[2]
         if (method === 'GET' && !action)
           return send(200, { agendamento: agenda.acessivel(actor, await store.getReserva(id)), agora: clock() })
-        if (method === 'PUT' && !action)
-          return send(200, { agendamento: await agenda.reagendar(actor, id, data, request.headers['idempotency-key'] ?? null) })
-        if (method === 'POST' && action === 'cancelar') return send(200, { agendamento: await agenda.cancelar(actor, id, data.motivo) })
-        if (method === 'POST' && action === 'status') return send(200, { agendamento: await agenda.alterarStatus(actor, id, data.status) })
+        if (method === 'PUT' && !action) {
+          agenda.profissional(actor)
+          return send(200, {
+            agendamento: await actor.alterarAgendamento(id, data.dataHora, data.servicoIds, { ...data, chave: request.headers['idempotency-key'] ?? null }),
+          })
+        }
+        if (method === 'POST' && action === 'cancelar') return send(200, { agendamento: await actor.cancelarAgendamento(id, data.motivo) })
+        if (method === 'POST' && action === 'status') {
+          agenda.profissional(actor)
+          return send(200, { agendamento: await actor.alterarStatus(id, data.status) })
+        }
       }
       if (method === 'GET' && path === '/relatorios') {
         agenda.profissional(actor)
-        const inicio = validarData(url.searchParams.get('inicio')),
-          fim = validarData(url.searchParams.get('fim'))
-        exigir(inicio <= fim, 'O início do período não pode ser posterior ao fim.')
-        const agendamentos = (await store.reservas(actor.id)).filter(
-          (item) => item.status === 'CONCLUIDO' && item.dataHora.slice(0, 10) >= inicio && item.dataHora.slice(0, 10) <= fim,
-        )
+        const inicio = url.searchParams.get('inicio'), fim = url.searchParams.get('fim')
+        const agendamentos = await actor.gerarRelatorio(inicio, fim)
         return send(200, {
           agendamentos,
           quantidade: agendamentos.length,
@@ -346,6 +264,7 @@ export function createApplication(options = {}) {
         error.status ?? (['23P01', '40001', '40P01', '55P03'].includes(error.code) || String(error.message).includes('locked') ? 409 : 500)
       if (status === 500 && !options.testMode) console.error('Falha interna:', error.code ?? error.name)
       send(status, {
+        ...(error instanceof ErroDominio && error.codigo ? { codigo: error.codigo } : {}),
         erro:
           status === 500
             ? 'Não foi possível gravar ou consultar os dados. Suas escolhas podem ser revisadas e reenviadas.'
@@ -365,6 +284,7 @@ export function createApplication(options = {}) {
     get store() {
       return store
     },
+    get usuarios() { return usuarios },
     get agenda() {
       return agenda
     },
