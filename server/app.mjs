@@ -2,7 +2,7 @@ import { createServer } from 'node:http'
 import { resolve } from 'node:path'
 import { createSqliteRepository } from './repository.mjs'
 import { AgendaService } from './booking.mjs'
-import { Barbeiro, Cliente, ErroDominio, agoraLocal, exigir, inteiro } from './domain.mjs'
+import { ErroDominio, agoraLocal, exigir, inteiro } from './domain.mjs'
 import { UsuariosService, emailValido } from './users.mjs'
 import { token, hashToken } from './security.mjs'
 
@@ -19,6 +19,7 @@ export function createApplication(options = {}) {
     await store.ready?.()
     agenda = new AgendaService(store, clock)
     usuarios = new UsuariosService(store, agenda, clock)
+    agenda.usuarios = usuarios
     if (!store.postgres && options.authorizedInvitations)
       await store.transaction(async () => {
         await store.sql.prepare('DELETE FROM convites WHERE utilizado=0').run()
@@ -53,7 +54,7 @@ export function createApplication(options = {}) {
       'Set-Cookie',
       `navalha_session=${sessionToken}; HttpOnly; SameSite=Strict; Path=/api; Max-Age=28800${options.secureCookies ? '; Secure' : ''}`,
     )
-    return { usuario: safeUser(await store.getUsuario(usuarioId)), csrfToken: csrf }
+    return { usuario: usuarios.usuario(safeUser(await store.getUsuario(usuarioId))), csrfToken: csrf }
   }
   const handler = async (request, response) => {
     response.setHeader('Content-Type', 'application/json; charset=utf-8')
@@ -150,7 +151,7 @@ export function createApplication(options = {}) {
             exigir(await store.admitirAutenticacao(attemptKey), 'Muitas tentativas. Aguarde alguns minutos.', 429)
           if (path === '/auth/login') {
             const row = await store.sql.prepare('SELECT * FROM usuarios WHERE email_indice=?').get(store.emailIndex(email))
-            const account = row ? usuarios.usuario(store.usuario(row)) : null
+            const account = row ? usuarios.usuario({ ...store.usuario(row), senhaHash: row.senha_hash }) : null
             exigir(account && (await account.autenticar(email, data.senha)), 'E-mail ou senha incorretos.', 401)
             await store.limparAutenticacao(attemptKey)
             if (rawToken) await store.sql.prepare('DELETE FROM sessoes WHERE token_hash=?').run(hashToken(rawToken))
@@ -158,7 +159,7 @@ export function createApplication(options = {}) {
           }
           const perfil = data.perfil ?? 'CLIENTE'
           exigir(['CLIENTE', 'BARBEIRO'].includes(perfil), 'Perfil inválido.')
-          const candidato = perfil === 'BARBEIRO' ? new Barbeiro({}, usuarios) : new Cliente({}, usuarios)
+          const candidato = usuarios.usuario({ perfil })
           const id = await candidato.cadastrar(data)
           await store.limparAutenticacao(attemptKey)
           return send(201, await sessionFor(id, response))
@@ -236,6 +237,10 @@ export function createApplication(options = {}) {
           return send(200, { agendamento: agenda.acessivel(actor, await store.getReserva(id)), agora: clock() })
         if (method === 'PUT' && !action) {
           agenda.profissional(actor)
+          exigir(
+            !['clienteId', 'barbeiroId', 'status', 'valorTotal', 'cupom', 'desconto', 'taxa'].some((key) => Object.hasOwn(data, key)),
+            'A edição só altera serviços, data e horário.',
+          )
           return send(200, {
             agendamento: await actor.alterarAgendamento(id, data.dataHora, data.servicoIds, { ...data, chave: request.headers['idempotency-key'] ?? null }),
           })

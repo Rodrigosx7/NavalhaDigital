@@ -4,7 +4,7 @@ Sistema web de gerenciamento de agendamentos, alinhado às Entregas 1 corrigida 
 
 ## Supabase e Vercel
 
-O sistema suporta PostgreSQL no Supabase e API/React na Vercel. O código e os testes locais foram adaptados; **os projetos externos ainda precisam ser criados e configurados**, e não existe deploy remoto verificado nesta entrega.
+O sistema está publicado em https://navalha-digital-rodrigosx7.vercel.app, com API/React na Vercel e PostgreSQL no Supabase (registro em `docs/compatibilidade/2026-10-17-publicacao.md`).
 
 O guia completo está em [docs/deploy.md](docs/deploy.md): criação dos projetos, chave privada, migração do schema, importação opcional do SQLite, usuário restrito, variáveis da Vercel, publicação e recuperação. O login atual permanece; não é necessário Supabase Auth. `vercel.json` configura API e páginas React.
 
@@ -24,6 +24,19 @@ npm run db:check
 `npm run test:postgres` inicia PostgreSQL nativo temporário e verifica regras, duas instâncias e disputa entre dois processos. `npm test` também verifica o motor PostgreSQL via PGlite, migração, configuração e HTTP. Para conferir uma publicação real: `npm run deploy:check -- https://DOMINIO-REAL.vercel.app`.
 
 No modo PostgreSQL, `npm run autorizar` grava o convite imediatamente no banco, sem reiniciar a API; backups usam `npm run db:backup -- criar`. Os procedimentos SQLite abaixo continuam válidos para o modo local.
+
+## Arquitetura orientada a objetos
+
+| Camada | Arquivo | Responsabilidade |
+|---|---|---|
+| Domínio | `server/domain.mjs` | `Usuario` (abstrata), `Cliente`, `Barbeiro`, `Servico`, `Disponibilidade`, `Agendamento` e `FabricaUsuarios`. Atributos privados (`#`) com getters; estado muda apenas pelos métodos de negócio. |
+| Serviço | `server/booking.mjs`, `server/users.mjs` | `AgendaService` e `UsuariosService`: transação, idempotência e persistência. Não contêm regras de agendamento. |
+| Persistência | `server/repository.mjs`, `server/postgres.mjs`, `server/store.mjs` | `Repository` converte linhas em entidades; `SqliteDatabase` e `PostgresDatabase` expõem a mesma interface `prepare`/`transaction`. |
+| Interface | `server/app.mjs`, `src/` | Rotas HTTP, sessão/CSRF e telas React. |
+
+UC09 segue a Entrega 2: `Barbeiro.alterarAgendamento()` resolve os serviços e envia `Agendamento.reagendar()`, que calcula valor e duração, consulta `Disponibilidade.possuiDisponibilidade()` e `Barbeiro.consultarAgenda()` e só então aplica a alteração; a gravação ocorre na transação de `AgendaService`. O teste `tests/modelo.test.mjs` verifica essa ordem de mensagens.
+
+Padrões aplicados: **Factory** (criacional, `FabricaUsuarios`), **Adapter** (estrutural, SQLite e PostgreSQL sob a mesma interface), **Facade** (estrutural, `AgendaService` para a interface HTTP), **Repository**; GRASP **Information Expert** (`Agendamento` calcula totais e valida transições, `Usuario` confere a senha), **Creator**, **Controller**, **Pure Fabrication** e **Indirection**; SOLID **SRP** (domínio × serviço × persistência), **OCP/DIP** (serviços dependem da interface de banco injetada) e **LSP** (`Cliente`/`Barbeiro` substituem `Usuario`).
 
 ## Rodar localmente
 
@@ -113,4 +126,4 @@ Na agenda aberta há um botão Atualizar para renovar dados e liberar ações cu
 - `docs/superpowers/specs/2026-10-16-adequacao-documental-design.md`: decisões de arquitetura.
 - `graphify-out/graph.html`: mapa interativo disponível localmente em http://127.0.0.1:5174/graphify-out/graph.html.
 
-As páginas antigas de demonstração foram mantidas no código como referência, mas não pertencem mais às rotas ativas. Não reative cupons, avaliações, status CONFIRMADO ou acesso por telefone sem alterar formalmente a especificação.
+As páginas antigas de demonstração (cupons, avaliações, painel admin com senha fixa) foram removidas do código no Projeto Final, por estarem fora do escopo documentado.

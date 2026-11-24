@@ -1,5 +1,5 @@
-import { Barbeiro, Cliente, ErroDominio, Servico, centavos, exigir, inteiro, texto, validarData } from './domain.mjs'
-import { hashSenha, verificarSenha, hashToken } from './security.mjs'
+import { ErroDominio, FabricaUsuarios, Servico, exigir, inteiro, texto, validarData } from './domain.mjs'
+import { hashSenha, hashToken } from './security.mjs'
 
 export function emailValido(email) {
   const value = texto(email, 'E-mail', 5, 254).toLowerCase()
@@ -7,15 +7,12 @@ export function emailValido(email) {
   return value
 }
 
-// As classes de domínio expõem os comandos UML; este serviço cuida do I/O.
-// O vínculo é privado em Usuario e nunca integra o JSON das contas/sessões.
+// As classes de domínio expõem os comandos UML; este serviço (Pure Fabrication)
+// cuida do I/O. O vínculo é privado em Usuario e nunca integra o JSON das contas.
 export class UsuariosService {
-  constructor(store, agenda, clock) { this.store = store; this.agenda = agenda; this.clock = clock }
-  usuario(data) {
-    if (!data) return null
-    exigir(['CLIENTE', 'BARBEIRO'].includes(data.perfil), 'Perfil inválido.')
-    return data.perfil === 'BARBEIRO' ? new Barbeiro(data, this) : new Cliente(data, this)
-  }
+  #fabrica
+  constructor(store, agenda, clock) { this.store = store; this.agenda = agenda; this.clock = clock; this.#fabrica = new FabricaUsuarios(this) }
+  usuario(data) { return this.#fabrica.criar(data) }
   dadosConta(data) {
     const account = {
       nome: texto(data.nome, 'Nome', 3, 100), email: emailValido(data.email), telefone: texto(data.telefone, 'Telefone', 10, 22),
@@ -46,13 +43,13 @@ export class UsuariosService {
       })
     } catch (error) { this.erroUnico(error) }
   }
-  async autenticar(actor, email, senha) {
-    const row = await this.store.sql.prepare('SELECT * FROM usuarios WHERE id=? AND email_indice=?').get(actor.id, this.store.emailIndex(emailValido(email)))
-    return Boolean(row && await verificarSenha(senha, row.senha_hash))
+  async obterSenhaHash(actor) {
+    const row = await this.store.sql.prepare('SELECT senha_hash FROM usuarios WHERE id=?').get(actor.id)
+    return row?.senha_hash ?? null
   }
   async atualizarDados(actor, data) {
     exigir(!Object.hasOwn(data, 'perfil') && !Object.hasOwn(data, 'senha'), 'Esta operação atualiza apenas os dados cadastrais.')
-    const account = this.dadosConta({ ...actor, ...data })
+    const account = this.dadosConta({ ...actor.toJSON(), ...data })
     if (actor.perfil === 'BARBEIRO') {
       exigir(account.email === actor.email, 'A alteração do e-mail profissional exige nova autorização fora do sistema.')
       texto(account.registroProfissional, 'Registro profissional', 2, 100)
@@ -60,7 +57,7 @@ export class UsuariosService {
     try {
       await this.store.sql.prepare('UPDATE usuarios SET dados=?,email_indice=? WHERE id=?').run(this.store.encode(account), this.store.emailIndex(account.email), actor.id)
     } catch (error) { this.erroUnico(error) }
-    return await this.store.getUsuario(actor.id)
+    return this.usuario(await this.store.getUsuario(actor.id))
   }
   erroUnico(error) {
     if (error.code === '23505' || String(error.message).includes('UNIQUE')) throw new ErroDominio('Este e-mail já está cadastrado.', 409)
@@ -76,19 +73,28 @@ export class UsuariosService {
     return await this.store.reservas(actor.id)
   }
   agendar(actor, data, chave) { return this.agenda.criar(actor, data, chave) }
-  cancelarAgendamento(actor, id, motivo) { return this.agenda.cancelar(actor, id, motivo) }
+  emTransacaoDoAgendamento(actor, id, operacao, opcoes) { return this.agenda.emTransacaoDoAgendamento(actor, id, operacao, opcoes) }
   cadastrarHorarios(actor, data, id) { return this.agenda.salvarJanela(actor, data, id) }
-  alterarAgendamento(actor, id, data, chave) { return this.agenda.reagendar(actor, id, data, chave) }
-  alterarStatus(actor, id, status) { return this.agenda.alterarStatus(actor, id, status) }
+  // UC10 / RN11: o próprio Servico valida e muda sua situação (atualizar/desativar).
   async cadastrarServicos(actor, data, id) {
     this.agenda.profissional(actor)
     return await this.store.transaction(async () => {
-      const current = id ? (await this.store.servicos()).find(item => item.id === id) : null
-      if (id) exigir(current, 'Serviço não encontrado.', 404)
-      const service = new Servico({ ...current, ...data })
-      if (id) await this.store.sql.prepare('UPDATE servicos SET nome=?,descricao=?,categoria=?,preco_centavos=?,duracao=?,ativo=? WHERE id=?').run(service.nome, service.descricao, service.categoria, centavos(service.preco), service.duracaoMinutos, Number(service.ativo), id)
-      else id = Number((await this.store.sql.prepare('INSERT INTO servicos(nome,descricao,categoria,preco_centavos,duracao,ativo) VALUES(?,?,?,?,?,?)').run(service.nome, service.descricao, service.categoria, centavos(service.preco), service.duracaoMinutos, Number(service.ativo))).lastInsertRowid)
-      return { ...service, id }
+      let service
+      if (id) {
+        service = (await this.store.servicos()).find(item => item.id === id)
+        exigir(service, 'Serviço não encontrado.', 404)
+        service.atualizar(data)
+        if (data.ativo !== undefined) {
+          exigir(typeof data.ativo === 'boolean', 'Situação ativa inválida.')
+          if (data.ativo) service.ativar()
+          else service.desativar()
+        }
+        await this.store.sql.prepare('UPDATE servicos SET nome=?,descricao=?,categoria=?,preco_centavos=?,duracao=?,ativo=? WHERE id=?').run(service.nome, service.descricao, service.categoria, service.precoCentavos, service.duracaoMinutos, Number(service.ativo), id)
+        return service
+      }
+      service = new Servico({ ...data, id: undefined })
+      id = Number((await this.store.sql.prepare('INSERT INTO servicos(nome,descricao,categoria,preco_centavos,duracao,ativo) VALUES(?,?,?,?,?,?)').run(service.nome, service.descricao, service.categoria, service.precoCentavos, service.duracaoMinutos, Number(service.ativo))).lastInsertRowid)
+      return new Servico({ ...service.toJSON(), id })
     })
   }
   async gerarRelatorio(actor, inicio, fim) {

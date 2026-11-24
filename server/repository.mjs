@@ -1,5 +1,6 @@
 import { AsyncLocalStorage } from 'node:async_hooks'
 import { cifrar, decifrar, indiceEmail } from './security.mjs'
+import { Agendamento, Disponibilidade, Servico } from './domain.mjs'
 
 // Every SQLite operation joins the same queue, including reads outside a transaction.
 // Async callbacks must never expose an uncommitted write to another HTTP request.
@@ -71,15 +72,15 @@ export class Repository {
   }
   servico(row) {
     return row
-      ? {
+      ? new Servico({
           id: row.id,
           nome: row.nome,
           descricao: row.descricao,
           categoria: row.categoria,
-          preco: row.preco_centavos / 100,
+          preco: (row.preco_centavos / 100).toFixed(2),
           duracaoMinutos: row.duracao,
           ativo: Boolean(row.ativo),
-        }
+        })
       : null
   }
   async servicos() {
@@ -87,7 +88,7 @@ export class Repository {
   }
   janela(row) {
     return row
-      ? {
+      ? new Disponibilidade({
           id: row.id,
           barbeiroId: row.barbeiro_id,
           diaSemana: row.dia,
@@ -95,7 +96,7 @@ export class Repository {
           horaFim: row.fim,
           intervaloMinutos: row.intervalo,
           ativo: Boolean(row.ativo),
-        }
+        })
       : null
   }
   async janelas(id) {
@@ -103,7 +104,9 @@ export class Repository {
       this.janela(row),
     )
   }
-  async mapReservas(rows) {
+  // Data Mapper/Repository: linhas do banco → entidades Agendamento. O contexto
+  // opcional associa o Barbeiro completo e o relógio usados pelas regras.
+  async mapReservas(rows, contexto = {}) {
     if (!rows.length) return []
     const ids = [...new Set(rows.flatMap((row) => [row.cliente_id, row.barbeiro_id]))]
     const users = new Map(
@@ -112,26 +115,28 @@ export class Repository {
         this.usuario(row),
       ]),
     )
-    return rows.map((row) => ({
-      id: row.id,
-      clienteId: row.cliente_id,
-      barbeiroId: row.barbeiro_id,
-      disponibilidadeId: row.disponibilidade_id,
-      cliente: { id: row.cliente_id, nome: users.get(row.cliente_id).nome },
-      barbeiro: { id: row.barbeiro_id, nome: users.get(row.barbeiro_id).nome },
-      dataHora: row.data_hora,
-      status: row.status,
-      observacao: this.decode(row.observacao),
-      dataCriacao: row.data_criacao,
-      dataAtualizacao: row.data_atualizacao,
-      valorTotal: row.valor_centavos / 100,
-      duracaoTotalMinutos: row.duracao,
-      servicos: JSON.parse(row.itens),
-    }))
+    return rows.map(
+      (row) =>
+        new Agendamento({
+          id: row.id,
+          cliente: { id: row.cliente_id, nome: users.get(row.cliente_id).nome },
+          barbeiro: contexto.barbeiro?.id === row.barbeiro_id ? contexto.barbeiro : { id: row.barbeiro_id, nome: users.get(row.barbeiro_id).nome },
+          disponibilidadeId: row.disponibilidade_id,
+          dataHora: row.data_hora,
+          status: row.status,
+          observacao: this.decode(row.observacao),
+          dataCriacao: row.data_criacao,
+          dataAtualizacao: row.data_atualizacao,
+          valorCentavos: row.valor_centavos,
+          duracaoTotalMinutos: row.duracao,
+          servicos: JSON.parse(row.itens),
+          relogio: contexto.relogio,
+        }),
+    )
   }
-  async getReserva(id) {
+  async getReserva(id, contexto) {
     const row = await this.sql.prepare('SELECT * FROM agendamentos WHERE id=?').get(id)
-    return row ? (await this.mapReservas([row]))[0] : null
+    return row ? (await this.mapReservas([row], contexto))[0] : null
   }
   async reservas(id) {
     return this.mapReservas(await this.sql.prepare('SELECT * FROM agendamentos WHERE barbeiro_id=? ORDER BY data_hora').all(id))
